@@ -340,3 +340,223 @@ Volvemos a buscar a Daisyui y escogemos el que mas nos giuste, lo agregamos a fo
 
 Personalización de la web
 ![WEb Personalizada](public/images/personalizada.PNG)
+
+## Botones Entrar y Registro
+
+Vamos a header y referenciamos los botones Entrar y Registro con las paginas correspondientes (Login y Register) que nos ha instalado Breeze.
+
+```
+<a href="/login" class="btn btn-poutline-warning">Entrar</a>
+
+<a href="/register" class="btn btn-poutline-warning">Registro</a>
+
+```
+
+Una vez hecho esto debemos darle a los apartados de registro y entrar la misma apariencia que nuestra web agregando las etiquetas de <x-layouts.layout> al inicio y </x-layouts.layout> al final.
+
+Además le damos el formato que queremos a cada uno de los formularios para que se vean mejor.
+
+En la web de entrar, creamos un div que envuelva el formulario:
+
+```
+<div class="flex flex-row justify-center p-5 bg-gray-200 ">
+```
+
+En el formulario:
+```
+<form method="POST" action="{{ route('login') }}" class="bg-white p-7 rounded-3xl">
+```
+Y ahora hacemos lo mismo con registro, poner el layout y dar formato.
+
+```
+<div class="flex flex-row justify-center p-5 bg-gray-200 ">
+´´´
+
+En el formulario:
+```
+<form method="POST" action="{{ route('register') }}" class="bg-white p-7 rounded-3xl">
+```
+
+![WEb entrar](public/images/entrar.PNG)
+
+## La base de datos MYSQL
+
+### Crear fichero docker compose
+
+Primero deberemos crear un fichero Proyecto_laravel/docker-compose.yaml .
+
+```
+version: "3.9"
+services:
+  mysql:
+    image: mysql
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - 33306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD_ROOT}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - 8080:80
+    environment:
+      - PMA_HOST=mysql
+      - PMA_ARBITRARY=1
+    depends_on:
+      - mysql
+```
+
+### Modificar .env
+
+Debemos agregar los parametro de configuración de nuestra base de datos descomentando y completando las siguientes lineas:
+
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=33306
+DB_DATABASE=laravel
+DB_USERNAME=alberto
+DB_PASSWORD=alberto
+DB_PASSWORD_ROOT=root
+```
+Por último, al final del fichero .gitignore agregamos:
+
+```
+/mysql
+```
+
+Ahora como estoy en windows, hay que ejecutar Docker Desktop con privilegios de administrador.
+
+Una vez abierto en el terminal ejecutamos:
+
+```
+docker compose up
+```
+
+Tenemos dos formas de comprobar que se ha realizado bien la tarea.
+
+Desde la web con el usuario y contraseña que hemos indicado en el archiv .env (en mi caso alberto - alberto).
+
+```
+http://localhost:8080/
+```
+
+![BD_inicio](public/images/bd_inicio.PNG)
+
+![BD_logueada](public/images/bd_logueada.PNG)
+
+
+Por comandos, desde cmd entrando al docker creado.
+
+```
+docker exec -it proyecto_laravel-mysql-1 bash
+```
+
+Y conectando con la base de datos.
+
+```
+mysql -u alberto -p
+```
+
+Ver que se ha creado correctamente la base de datos.
+
+```
+
+SHOW DATABASES;
+
+```
+
+![BD_consola](public/images/bd_consola1.PNG)
+
+![BD_consola_logueada](public/images/bd_consola2.PNG)
+
+### Migración
+
+Ahora tenemos que generar la migración, debemos ejecutar:
+
+```
+php artisan make:migration alumnos --create=alumnos
+```
+Una vez ejecutado se nos crea en database/migrations/ una migracion alumnos
+
+Solo esta id , pero creamos todos los campos que necesitemos en nuestra tabla:
+
+```
+
+Schema::create('alumnos', function (Blueprint $table) {
+    $table->id();
+    $table->string('nombre');
+    $table->integer('edad');
+    $table->string('email');
+    $table->timestamps();
+});
+```
+Despues ejecutamos el siguiente comando para ejecutar las migraciones.
+```
+php artisan migrate
+```
+
+Nota: si queremos modificar algún campo de las tablas, tenemos que ejecutar el siguiente comando, que borra todos los campos y los vuelve a crear
+
+```
+php  artisan migrate:fresh 
+```
+
+## Registro de usuarios
+
+Ahora ya tenemos todo listo para poder registrar usuarios. 
+
+Lo único que debemos cambiar en app/Http/controllers/Auth/
+
+AuthenticatedSessionController.php:
+
+Para cuando hagagamos:
+```
+return redirect()->intended(route('main', absolute: false));
+```
+
+RegisteredUserController.php:
+
+```
+ return redirect(route('main', absolute: false));
+ ```
+
+Esto es para que una vez registrados o logueados nos lleve a la pagina de incio.
+
+En el header tambien  se realizan cambiando para muestre los botones Entrar y Registrar sin estar logueado (en modo invitado):
+
+```
+@guest 
+<a href="/login" class="btn btn-primary">Acceso</a>
+<a href="/register" class="btn btn-secondary">Registro</a>
+@endguest
+```
+![User no logueado](public/images/nologueado.PNG)
+
+Y el nombre del usuario y el boton Salir una vez que nos hemos logueado.
+```
+@auth 
+  <h1 class="text-2xl text-white mr-4">{{ auth()->user()->name }}</h1>
+  <form action="{{ route("logout") }}" method="POST">
+   <input class="btn btn-glass" type="submit" value="Salir">
+  </form>
+@endauth
+```
+
+![User logueado](public/images/logueado.PNG)
+
+Además hay que corregir un error, porque cuando le damos s Salir no nos lleva a nuestra pagina inicial, esto es por seguridad al venir desde un formulario y evitar posibles ataques. Para solucionarlo debemos poner un token en el header dentro del formulario logout.
+```
+@auth 
+  <h1 class="text-2xl text-white mr-4">{{ auth()->user()->name }}</h1>
+  <form action="{{ route("logout") }}" method="POST">
+    @csrf 
+   <input class="btn btn-glass" type="submit" value="Salir">
+  </form>
+@endauth
+```
