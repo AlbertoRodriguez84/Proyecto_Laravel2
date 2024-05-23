@@ -11,4 +11,8 @@ class Alumno extends Model
 
     protected $fillable = ['nombre', 'DNI', 'edad', 'email'];
 
+    public function profesor()
+    {
+        return $this->belongsTo(Profesor::class);
+    }
 }

@@ -1175,3 +1175,148 @@ Despues en AlumnoController.php debemos asignar como se van a realizar la busque
     }
 ```
 ![Busqueda](public/images/busqueda.PNG)
+
+## Crear modelo de datos profesor
+
+Primero debemos hacer como cuando creamos los alumnos.
+
+```
+php artisan make:model Profesor --all
+```
+
+En la tutoria haceesto para evitar que luego nos den problemas los plurales al crear las tablas, hay que añadir en app/providers/AppServiceProviders-php lo siguiente:
+```
+  public function boot(): void
+    {
+        //
+        Pluralizer::useLanguage('spanish');
+    }
+```
+Este cambio nos obliga a hacer cambios  en el modelo User, ya qye al hacer los plurales en castellano esperará que se llame usuarios, si no nos pondra useres. Cambiamos el nombre en models a ser.php por Usuario.php
+
+Tambien hay que cambiar en database/migrations en la tabla de users hay que sustituirlo por usuarios.
+```
+  Schema::create('usuarios', function (Blueprint $table) 
+```
+
+Yo ese paso no lo he seguido porque luego me da mas errores, dejo la tabla como profesors.
+
+![Error](public/images/error.PNG)
+
+Ahora hay que crear la table en database/migrations donde nos ha creado la de profesor:
+
+```
+  Schema::create('profesors', function (Blueprint $table) {
+            $table->id();
+            $table->string('DNI');
+            $table->string('nombre');
+            $table->integer('edad');
+            $table->string("email")->unique;
+            $table->timestamps();
+        });
+
+```
+
+NOTA: Debemos cambiar el nombre de la tabla porque laravel las crea en el orden que aparece y luego como pondremos un foreign key de profesor en alumnos , la tabla profesor debe de crearse antes que la de alumnos, por lo que debe aparecer antes.
+
+
+Ahora en database/factories debemos agregar en Profesor.php para que nos devuelva los campos nombre e email. Al poner saveEmail nos aseguramos de que se cree un email unico, que no se repetirá:
+```
+    public function definition(): array
+    {
+        return [
+            "nombre" => $this->faker->name(),
+            "email" => $this->faker->safeEmail(),
+            "edad" => $this->faker->numberBetween(15, 80),
+            "DNI" => $this->get_dni(),
+        ];
+    }
+
+
+    private function get_dni(): string
+    {
+        $number = $this->faker->numberBetween(10000000, 99999999);
+        $letras = "TRWAGMYFPDXBNJZSQVHLCKE";
+        $letra = $letras[$number % 23];
+        return "$number-$letra";
+    }
+```
+Despues de esto, debemos agregar la tabla profesores a la tabla alumnos, por lo que en el modelo alumnos ponemos la siguiente linea para agregar la foreign key. Si un profesor tiene asignados alumnos no se podra eliminar.
+```
+ $table->foreignId('profesor_id')->constrained('profesors')->restrictOnDelete();
+```
+
+Lo siguiente que debemos modificar es agregar en los modelos de alumno y profesor las refencias entre ellos.
+
+En el modelo Profesor.php hay que decirle que un profesor puede tutela muchos alumnos, se pone asi:
+```
+class Profesor extends Model
+{
+    use HasFactory;
+    public function alumnos(){
+        return $this->hasMany(Alumno::class);
+    }
+}
+```
+En el modelos Alumno.php tambien se puede agregar un  metodo llamado profesor que devolverá los datos del profesor que sea tutor de un alumno.
+```
+class Alumno extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['nombre', 'DNI', 'edad', 'email'];
+
+    public function profesor()
+    {
+        return $this->belongsTo(Profesor::class);
+    }
+}
+```
+
+Ahora en database/factories/ProfesorSeeder.php debemos decirle cuantos profesores queremos que nos cree y agregar la llamada.
+```
+use App\Models\Profesor;
+
+class ProfesorSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        Profesor::factory(10)->create();
+    }
+}
+```
+
+Y en AlumnoSeeder hacemos los siguientes cambios:
+```
+    public function run(): void
+    {
+        $profesores = Profesor::all();
+
+        // Crear alumnos y asignar un profesor aleatorio a cada uno
+        for ($i = 0; $i < 50; $i++) {
+            $alumno = Alumno::factory()->create(['profesor_id' => $profesores->random()->id,
+            ]);
+        }
+    }
+}
+```
+Ya podemos decirle a databaseseeder.php que llame a profesor antes que a alumno.
+```
+$this->call([ProfesorSeeder::class, AlumnoSeeder::class]);
+```
+
+Una vez hecho esto, debemos hacer la poblacion de las tablas con:
+```
+ php artisan migrate:fresh --seed
+```
+
+Vemos como ya tenemos los profesores creados en la base de datos.
+
+![Profesores](public/images/profesores.PNG)
+
+Y aqui como se ha asignado un profesor a cada alumno.
+
+![Alumnos con profesor](public/images/alumno-prof.PNG)
