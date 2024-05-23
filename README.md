@@ -1126,3 +1126,52 @@ Route::middleware(['auth'])->group(function () {
 Y vemos como al intentar entrar a la misma pagina nos pide login.
 
 ![Despues de middleware](public/images/despues_middleware.PNG)
+
+### Busqueda
+
+Tambien podemos agregar en index.blade.php un boton de busqueda, para eso seguimos estos videos:
+```
+https://www.youtube.com/watch?v=flRZgfee53k
+```
+
+```
+https://www.youtube.com/watch?v=aPYEOVDTV6E
+```
+
+```
+https://www.youtube.com/watch?v=HkfXZmM7jEU
+```
+
+Modificamos ligeramente la pagina para que busqueda aparezca a la izquierda y Nuevo Alumno a la derecha.
+
+```
+<div class="flex justify-between">
+        <form action="{{ route('alumnos.index') }}" method="GET">
+            <input type="text" name="search" placeholder="Buscar alumno..." class="mx-2">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+        <a href="{{ route("alumnos.create") }}" class="btn btn-primary mx-10">Nuevo alumno</a>
+    </div>
+```
+![Boton busqueda](public/images/boton_busqueda.PNG)
+
+Despues en AlumnoController.php debemos asignar como se van a realizar la busqueda, por los campos Nombre, DNI y email. Para ello modificamos la funcion index
+
+```
+    public function index(Request $request)
+    {
+        $query = $request->input('search');
+
+        if ($query) {
+            $alumnos = Alumno::where('nombre', 'LIKE', '%' . $query . '%')
+                ->orWhere('DNI', 'LIKE', '%' . $query . '%')
+                ->orWhere('email', 'LIKE', '%' . $query . '%')
+                ->paginate(8);
+        } else {
+            $alumnos = Alumno::paginate(8);
+        }
+
+        return view('alumnos.index', compact('alumnos'));
+    }
+```
+![Busqueda](public/images/busqueda.PNG)
