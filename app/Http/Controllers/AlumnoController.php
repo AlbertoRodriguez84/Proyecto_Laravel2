@@ -5,17 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\Alumno;
 use App\Http\Requests\StoreAlumnoRequest;
 use App\Http\Requests\UpdateAlumnoRequest;
+use Illuminate\Http\Request;
 
 class AlumnoController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $alumnos = Alumno::all();
-        return view('alumnos.index',compact('alumnos'));
-        //
+        $query = $request->input('search');
+
+        if ($query) {
+            $alumnos = Alumno::where('nombre', 'LIKE', '%' . $query . '%')
+                ->orWhere('DNI', 'LIKE', '%' . $query . '%')
+                ->orWhere('email', 'LIKE', '%' . $query . '%')
+                ->paginate(8);
+        } else {
+            $alumnos = Alumno::paginate(8);
+        }
+
+        return view('alumnos.index', compact('alumnos'));
     }
 
     /**
@@ -61,11 +71,10 @@ class AlumnoController extends Controller
      */
     public function update(UpdateAlumnoRequest $request, Alumno $alumno)
     {
-        $datos= $request -> input();
-        $alumno-> update($datos);
-        session()->flash ("status", "Se ha actualizado el alumno $alumno -> id");
-        return redirect() -> route('alumnos.index');
-        //
+        $datos = $request->input();
+        $alumno->update($datos);
+        session()->flash("status", "Se ha actualizado el alumno $alumno->id");
+        return redirect()->route('alumnos.index');
     }
 
     /**

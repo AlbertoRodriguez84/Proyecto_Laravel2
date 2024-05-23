@@ -6,7 +6,9 @@ use \App\Http\Controllers\MainController;
 
 
 Route::resource("alumnos", \App\Models\Alumno::class);
-Route::resource("alumnos", \App\Http\Controllers\AlumnoController::class);
+Route::middleware(['auth'])->group(function () {
+    Route::resource("alumnos", \App\Http\Controllers\AlumnoController::class);
+});
 Route::get('/', [MainController::class, 'index'])->name('main');
 /*Route::get('/', function () {
     return view('welcome');

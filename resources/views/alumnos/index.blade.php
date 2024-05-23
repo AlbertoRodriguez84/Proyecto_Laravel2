@@ -63,6 +63,7 @@
             @endforeach
             </tbody>
         </table>
+        {{$alumnos->links()}}
     </div>
 </x-layouts.layout>
 
@@ -84,4 +85,13 @@
             }
         });
     }
+
+    // Ocultar el mensaje de sesión después de 5 segundos
+    setTimeout(function () {
+        var statusMessage = document.querySelector('.alert');
+        if (statusMessage) {
+            statusMessage.remove();
+        }
+    }, 5000);
 </script>
+

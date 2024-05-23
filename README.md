@@ -1096,4 +1096,82 @@ Ponemos el código del alert al final de layout.
 </script>
 ```
 
-![Ventana emergente](public/images/borrado.PNG)
+![Venatan emergente](public/images/borrado.PNG)
+
+He agregado un script para que el mensaje de Alumno guardado-Alumno modificado-Alumno borrado dure 5 segundos y desaparezca.
+
+```
+// Ocultar el mensaje de sesión después de 5 segundos
+setTimeout(function () {
+    var statusMessage = document.querySelector('.alert');
+    if (statusMessage) {
+        statusMessage.remove();
+    }
+}, 5000);
+```
+
+Tambien he observado que aunque hay que estar autenticado para ver el boton alumnos, si en el navegador directamente ponemos 127.0.0.1:8000/alumnos te permite verlo. Buscando en la documentación oficial de laravel (https://laravel.com/docs/11.x/middleware) enla parte de grupos (Middleware Groups) explica como protegerlo.
+
+Sin aplicar la restricción vemos como carga el listado sin hacer login.
+
+![Antes de middleware](public/images/antes_middleware.PNG)
+
+Ponemos lo siguiente el web.php para proteger la ruta.
+```
+Route::middleware(['auth'])->group(function () {
+    Route::resource("alumnos", \App\Http\Controllers\AlumnoController::class);
+});
+```
+
+Y vemos como al intentar entrar a la misma pagina nos pide login.
+
+![Despues de middleware](public/images/despues_middleware.PNG)
+
+### Busqueda
+
+Tambien podemos agregar en index.blade.php un boton de busqueda, para eso seguimos estos videos:
+```
+https://www.youtube.com/watch?v=flRZgfee53k
+```
+
+```
+https://www.youtube.com/watch?v=aPYEOVDTV6E
+```
+
+```
+https://www.youtube.com/watch?v=HkfXZmM7jEU
+```
+
+Modificamos ligeramente la pagina para que busqueda aparezca a la izquierda y Nuevo Alumno a la derecha.
+
+```
+<div class="flex justify-between">
+        <form action="{{ route('alumnos.index') }}" method="GET">
+            <input type="text" name="search" placeholder="Buscar alumno..." class="mx-2">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+        <a href="{{ route("alumnos.create") }}" class="btn btn-primary mx-10">Nuevo alumno</a>
+    </div>
+```
+![Boton busqueda](public/images/boton_busqueda.PNG)
+
+Despues en AlumnoController.php debemos asignar como se van a realizar la busqueda, por los campos Nombre, DNI y email. Para ello modificamos la funcion index
+
+```
+    public function index(Request $request)
+    {
+        $query = $request->input('search');
+
+        if ($query) {
+            $alumnos = Alumno::where('nombre', 'LIKE', '%' . $query . '%')
+                ->orWhere('DNI', 'LIKE', '%' . $query . '%')
+                ->orWhere('email', 'LIKE', '%' . $query . '%')
+                ->paginate(8);
+        } else {
+            $alumnos = Alumno::paginate(8);
+        }
+
+        return view('alumnos.index', compact('alumnos'));
+    }
+```
+![Busqueda](public/images/busqueda.PNG)
