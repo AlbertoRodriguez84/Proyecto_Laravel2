@@ -1096,4 +1096,33 @@ Ponemos el código del alert al final de layout.
 </script>
 ```
 
-![Ventana emergente](public/images/borrado.PNG)
+![Venatan emergente](public/images/borrado.PNG)
+
+He agregado un script para que el mensaje de Alumno guardado-Alumno modificado-Alumno borrado dure 5 segundos y desaparezca.
+
+```
+// Ocultar el mensaje de sesión después de 5 segundos
+setTimeout(function () {
+    var statusMessage = document.querySelector('.alert');
+    if (statusMessage) {
+        statusMessage.remove();
+    }
+}, 5000);
+```
+
+Tambien he observado que aunque hay que estar autenticado para ver el boton alumnos, si en el navegador directamente ponemos 127.0.0.1:8000/alumnos te permite verlo. Buscando en la documentación oficial de laravel (https://laravel.com/docs/11.x/middleware) enla parte de grupos (Middleware Groups) explica como protegerlo.
+
+Sin aplicar la restricción vemos como carga el listado sin hacer login.
+
+![Antes de middleware](public/images/antes_middleware.PNG)
+
+Ponemos lo siguiente el web.php para proteger la ruta.
+```
+Route::middleware(['auth'])->group(function () {
+    Route::resource("alumnos", \App\Http\Controllers\AlumnoController::class);
+});
+```
+
+Y vemos como al intentar entrar a la misma pagina nos pide login.
+
+![Despues de middleware](public/images/despues_middleware.PNG)
