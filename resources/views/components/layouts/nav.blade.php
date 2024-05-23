@@ -2,4 +2,7 @@
     <a class="btn btn-primary" href="">Inicio</a>
     <a class="btn btn-secondary" href="">Alumnos</a>
     <a class="btn btn-success" href="">Proyectos</a>
+    @auth
+        <a href="{{route("alumnos.index")}}" class=" btn btn-secondary" href="">Alumnos</a>
+    @endauth
 </nav>
