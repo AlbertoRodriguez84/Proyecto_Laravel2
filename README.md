@@ -378,3 +378,99 @@ En el formulario:
 ```
 
 ![WEb entrar](public/images/entrar.PNG)
+
+## La base de datos MYSQL
+
+### Crear fichero docker compose
+
+Primero deberemos crear un fichero Proyecto_laravel/docker-compose.yaml .
+
+```
+version: "3.9"
+services:
+  mysql:
+    image: mysql
+    volumes:
+      - ./mysql:/var/lib/mysql
+    ports:
+      - 33306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD_ROOT}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - 8080:80
+    environment:
+      - PMA_HOST=mysql
+      - PMA_ARBITRARY=1
+    depends_on:
+      - mysql
+```
+
+### Modificar .env
+
+Debemos agregar los parametro de configuración de nuestra base de datos descomentando y completando las siguientes lineas:
+
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=33306
+DB_DATABASE=laravel
+DB_USERNAME=alberto
+DB_PASSWORD=alberto
+DB_PASSWORD_ROOT=root
+```
+Por último, al final del fichero .gitignore agregamos:
+
+```
+/mysql
+```
+
+Ahora como estoy en windows, hay que ejecutar Docker Desktop con privilegios de administrador.
+
+Una vez abierto en el terminal ejecutamos:
+
+```
+docker compose up
+```
+
+Tenemos dos formas de comprobar que se ha realizado bien la tarea.
+
+Desde la web con el usuario y contraseña que hemos indicado en el archiv .env (en mi caso alberto - alberto).
+
+```
+http://localhost:8080/
+```
+
+![BD_inicio](public/images/bd_inicio.PNG)
+
+![BD_logueada](public/images/bd_logueada.PNG)
+
+
+Por comandos, desde cmd entrando al docker creado.
+
+```
+docker exec -it proyecto_laravel-mysql-1 bash
+```
+
+Y conectando con la base de datos.
+
+```
+mysql -u alberto -p
+```
+
+Ver que se ha creado correctamente la base de datos.
+
+```
+
+SHOW DATABASES;
+
+```
+
+![BD_consola](public/images/bd_consola1.PNG)
+
+![BD_consola_logueada](public/images/bd_consola2.PNG)
