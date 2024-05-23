@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Alumno;
+use App\Models\Profesor;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,7 +14,13 @@ class AlumnoSeeder extends Seeder
      */
     public function run(): void
     {
-        Alumno::factory(50)->create();
-        //
+        $profesores = Profesor::all();
+
+        // Crear alumnos y asignar un profesor aleatorio a cada uno
+        for ($i = 0; $i < 50; $i++) {
+            $alumno = Alumno::factory()->create([
+                'profesor_id' => $profesores->random()->id,
+            ]);
+        }
     }
 }

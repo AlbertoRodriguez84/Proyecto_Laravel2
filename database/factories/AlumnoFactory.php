@@ -21,6 +21,7 @@ class AlumnoFactory extends Factory
             'email' => $this->faker->safeEmail(),
             'edad' => $this->faker->numberBetween(15, 80),
             'DNI' => $this->getDni(),
+
         ];
     }
 
