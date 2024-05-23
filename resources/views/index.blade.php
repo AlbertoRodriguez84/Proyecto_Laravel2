@@ -1,25 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Title</title>
-    @vite("resources/css/app.css")
-</head>
-<body>
-<header><h1 class="h-15v bg-header">Esta es mi página principal</h1></header>
-<hr />
-<nav CLASS="h-10 bg-nav">
-    Menu
-</nav>
-
-<main class="h-65v bg-main">
-    Parte Principal
-</main>
-
-<footer class="h-10v bg-footer">
-    Footer
-</footer>
-</body>
-</html>
+<x-layouts.layout>
+    <div class="hero h-full bg-base-200">
+        <div class="hero-content flex-col lg:flex-row">
+            <img src="https://img.daisyui.com/images/stock/photo-1635805737707-575885ab0820.jpg" class="max-w-sm rounded-lg shadow-2xl" />
+            <div>
+                <h1 class="text-5xl font-bold">Box Office News!</h1>
+                <p class="py-6">Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem quasi. In deleniti eaque aut repudiandae et a id nisi.</p>
+                <button class="btn btn-primary">Get Started</button>
+            </div>
+        </div>
+    </div>
+</x-layouts.layout>
