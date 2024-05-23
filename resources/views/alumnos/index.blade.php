@@ -25,6 +25,8 @@
                 <th>Nombre</th>
                 <th>Edad</th>
                 <th>Email</th>
+                <th>Tutor</th>
+                <th>Email Tutor</th>
                 <th>Editar</th>
                 <th>Borrar</th>
             </tr>
@@ -36,6 +38,8 @@
                     <td>{{ $alumno->nombre }}</td>
                     <td>{{ $alumno->edad }}</td>
                     <td>{{ $alumno->email }}</td>
+                    <td>{{ $alumno->profesor->nombre}}</td>
+                    <td>{{ $alumno->profesor->email}}</td>
                     <td>
                         <a href="{{ route("alumnos.edit", $alumno->id) }}">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -63,6 +67,7 @@
             @endforeach
             </tbody>
         </table>
+
         {{$alumnos->links()}}
     </div>
 </x-layouts.layout>
@@ -94,4 +99,3 @@
         }
     }, 5000);
 </script>
-

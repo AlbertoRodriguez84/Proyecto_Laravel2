@@ -5,22 +5,35 @@ namespace App\Http\Controllers;
 use App\Models\Profesor;
 use App\Http\Requests\StoreProfesorRequest;
 use App\Http\Requests\UpdateProfesorRequest;
+use Illuminate\Http\Request;
 
 class ProfesorController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        //
-    }
 
+    public function index(Request $request)
+    {
+        $query = $request->input('search');
+
+        if ($query) {
+            $profesores = Profesor::where('nombre', 'LIKE', '%' . $query . '%')
+                ->orWhere('DNI', 'LIKE', '%' . $query . '%')
+                ->orWhere('email', 'LIKE', '%' . $query . '%')
+                ->paginate(8);
+        } else {
+            $profesores = Profesor::paginate(8);
+        }
+
+        return view('profesores.index', compact('profesores'));
+    }
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
+
         //
     }
 
@@ -29,7 +42,7 @@ class ProfesorController extends Controller
      */
     public function store(StoreProfesorRequest $request)
     {
-        //
+
     }
 
     /**
