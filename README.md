@@ -701,3 +701,399 @@ El siguiente paso es generar la vista donde podremos visualizar nuestros alumnos
 </x-layouts.layout>
 ```
 ![Tabla alumnos](public/images/tabla_alumnos.PNG)
+
+## Agregar, editar y borrar nuevos alumnos
+
+Primero debemos empezar por modificar nuestra apariencia, empezamos por la tabla para agregar el boton nuevo alumno.
+
+```
+<x-layouts.layout>
+    <h1 class="text-4xl text-red-700 text-center font-bold bg-gray-300">Listado de alumnos</h1>
+    <div class="overflow-x-auto h-full">
+        <table class="table table-xs table-pin-rows table-pin-cols">
+            <thead>
+```
+
+Agregar un ancla alumno, para luego referenciar donde tiene que ir mediante href, debajo de listado de alumnos.
+
+```
+<a class="btn btn-primary mx-10">Nuevo alumno</a>
+```
+
+Despues agregamos a nuestra tabla dos columnas para los campos de editar y borrar.
+```
+<th>DNI</th>
+<th>Nombre</th>
+<th>Edad</th>
+<th>Email</th>
+<th>Editar</th>
+<th>Borrar</th>
+```
+
+Dentro del bucle foreach, para que aparezcan al lado de cada alumno, creamos los dos nuevos campos. Para darle formato a los campos, en vez de poner el nombre vamos a https://heroicons.com/, buscamos el icono que queremos poner y copiamos y pegamos el código svg. Podemos personalizar el color, tamaño,…:
+
+```
+<td>
+    <button>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+        </svg>
+
+    </button>
+</td>
+<td>
+    <button>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+        </svg>
+
+    </button>
+</td>
+```
+
+Ahora toca dotar de funcionalidad los nuevo botones.En el botón Nuevo alumno, agregamos la ruta del método que queremos ejecutar, en nuestro caso create.
+
+```
+<a href={{route("alumnos.create")}} class="btn btn-primary mx-10">Nuevo alumno</a>
+```
+Despues en el controlador AlumnoController.php agregaremos al método create la vista del formulario para crear los alumnos.
+
+```
+public function create()
+{
+    return view ("alumnos.create");
+    //
+}
+```
+
+Ahora vamos a crear la vista del formulario en la carpeta alumno dentro de resources/views/alumno/create.blade.php, llamando al metodo alumnos.store para guardar los datos en la base de datos.
+```
+<x-layouts.layout>
+    <h1 class="text-4xl text-red-600 font-bold flex flex-row justify-center">Alta nuevos alumnos</h1>
+    <div class="flex flex-row justify-center p-5 bg-gray-200 ">
+
+        <form method="POST" action="{{ route('alumnos.store') }}" method="POST" class="bg-white p-7 rounded-3xl">
+            @csrf
+            <x-input-label for="nombre">
+                Nombre
+            </x-input-label>
+            <x-text-input name="nombre" />
+            <x-input-label for="DNI">
+                DNI
+            </x-input-label>
+            <x-text-input name="DNI" />
+            <x-input-label for="email">
+                Email
+            </x-input-label>
+            <x-text-input name="email" />
+            <x-input-label for="edad">
+                Edad
+            </x-input-label>
+            <x-text-input name="edad" />
+            <br/>
+            <button class="btn btn-primary mx-2 mt-10 p-100 " type="submit" value="Guardar">Guardar</button>
+            <button class="btn btn-primary mx-2  mt-10 p-100" type="submit" value="Cancelar">Cancelar</button>
+
+
+        </form>
+    </div>
+</x-layouts.layout>
+```
+![Formulario nuevo alumno](public/images/formulario_nuevo_alumno.PNG)
+
+Para poder guardar los datos, por seguridad Laravel bloquea el acceso al guardado y para que nos permita hacerlo debemos cambiar en Requests/StoreAlumno.php la función authorize a true.
+```
+public function authorize(): bool
+{
+    return true;
+}
+```
+
+Añadir al modelo alumno.php los campos que le van a llegar cuando se cree el alumno, tenemos que especificar que campos le van a llegar.
+```
+class Alumno extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['nombre', 'DNI', 'edad', 'email'];
+
+}
+```
+
+Ahora  en AlumnoController.php y completar la función store que actualmente está vacía para que coja los datos, y cree un nuevo alumno, devolviéndonos al listado general una vez agregado.
+
+```
+public function store(StoreAlumnoRequest $request)
+{
+    $datos=$request->input();
+    $alumno= new Alumno($datos);
+    $alumno->save();
+    return redirect()->route('alumnos.index');
+    //
+}
+```
+
+NOTA: Hemos indicado que coja todo el array, pero laravel internamente lo gestiona de manera que solo va a aguardar los campos que hemos permitido en el paso anterior en alumno.php
+
+Aunque ya lo guarda, debemos crear unas reglas minimas de validación para evitar luego errores. Esto se hace en request/StoreAlumnoRequest.php en la función rules. En la validación hacemos que los 3 campos sean obligatorios con required, indicamos que tipo de datos deben contener (string, integer), el email no puede estar duplicado (unique) y la edad debe estar entre 10 y 100 (between).
+
+```
+public function rules(): array
+{
+    return [
+        "nombre"=>"string|required|min:5|max:50",
+        "email"=>"string|required|unique:alumnos",
+        "edad" => "integer|between:10,100",
+        "DNI" => 'required|string',
+        //
+    ];
+}
+```
+
+Ahora para poder comprobar mas facilmente que insertar registros funciona, se borran todos los registros y se crearan solo 5 cambiando database/seeders/AlumnoSeeder.php
+
+```
+Alumno::factory(5)->create();
+```
+
+Y ejecutamos para que cree los nuevos registros.
+
+```
+php artisan migrate:fresh --seed
+```
+
+![Formulario nuevo alumno rellenado](public/images/registro_1.PNG)
+
+![Alta  nuevo alumno efectiva](public/images/registro_2.PNG)
+
+Para mostrar un mensaje si no se cumple con la validación del campo, debemos poner debajo de cada cuadro de texto la condición para que nos la muestre
+
+```
+@if($errors->get("nombre"))
+    @foreach($errors->get("nombre") as $error)
+        <div class="text-sm text-red-600">
+            $error
+
+        </div>
+    @endforeach
+@endif
+```
+
+Para que los mensajes de error salgan en castellano, hay que instalar el paquete de idiomas desde el terminal.
+
+```
+composer require laravel-lang/Lang
+```
+
+Nos aparecerá la carpeta laravel-lang/Lang, que ahora debemos publicarla para poder utilizarla.
+
+```
+php artisan lang:publish
+```
+
+Ahora nos aparece la carpeta en nuestro proyecto lang, pero solo esta ingles, para poder tener castellano debemos agregarlo desde el terminal.
+
+```
+php artisan lang:add es
+```
+
+Y ya solo queda ir al fichero de configuración .env y cambiar el idioma.
+
+```
+APP_LOCALE=es
+```
+
+Además agregamos value=”{{(old(‘nombre’)}}” para que en caso de error nos mantenga los últimos campos escritos en el formulario y no debamos volver a completarlo.
+
+```
+<x-text-input name="nombre" value="{{ old('nombre') }}" />
+```
+
+Y para que el botón cancelar nos devuelva al listado lo referenciamos.
+
+```
+<a href="{{ route('alumnos.index') }}" class="btn btn-primary mx-2 mt-10">Cancelar</a>
+```
+
+Para que nos muestre un mensaje como que se ha guardado el alumno, en -AlumnoController.php  creamos una variable de sesión.
+
+```
+session()->flash("status", "Se ha creado el alumno $alumno->nombre");
+```
+Y ahora la referenciamos desde index.blade.php de alumnos debajo del titulo. Para darle formato a la ventana de alert buscamos en daisyui un diseño que nos encaje.
+
+```
+    @if (session()->has("status"))
+        <div role="alert" class="alert alert-success">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>{{ session()->get("status") }}</span>
+        </div>
+    @endif
+```
+
+Como ya podemos crear alumnos, ahora vamos a configurar la edición de uno creado. Primero tenemos que referenciar alumno.edit dentro del botón editar que había personalizado desde daisyui.
+
+```
+<a href="{{route("alumnos.edit", $alumno->id)}}">
+```
+
+Despues creamos dentro de alumno, la vista de edición : edit.blade.php
+Copiamos el formulario de alta de nuevos alumnos y modificamos el route del formulario.
+
+```
+<form method="POST" action="{{ route('alumnos.update', $alumno->id) }}" class="bg-white p-7 rounded-3xl">
+```
+
+Agregamos el método por el cual vamos a actualizar PUT (envia todos los datos) o PATCH (solo los seleccionados.
+
+```
+@method('PUT')
+```
+
+Y decimos a  los campos del formulario que nos muestre el valor actual de la variable $alumno.
+
+```
+<x-text-input name="nombre" value="{{ $alumno->nombre }}" />
+```
+
+Aplicamos la lógica al controlador.
+
+```
+public function update(UpdateAlumnoRequest $request, Alumno $alumno)
+{
+    $datos= $request -> input();
+    $alumno-> update($datos);
+    session()->flash ("status", "Se ha actualizado el alumno $alumno -> id");
+    return redirect() -> route('alumnos.index');
+    //
+}
+```
+
+Ahora debemos permitir el update en request porque si no nos va a decir operación no autorizada
+
+```
+public function authorize(): bool
+{
+    return true;
+}
+```
+
+Y copiamos las validaciones del Store para que tengan que cumplir los mismos requeridos, quitando unique de email, porque sino no nos dejará actualizar.
+
+```
+return [
+    "nombre"=>"string|required|min:5|max:50",
+    "email"=>"string|required",
+    "edad" => "integer|required|between:10,100",
+    "DNI" => 'required|string',
+    //
+];
+```
+
+### -ventana emergente para confirmar guardado
+
+Vamos a instalar sweet alert
+
+```
+npm install sweetalert2
+```
+
+Ahora en edit.blade.php modificamos el botón guardar con el evento onclick de javascript
+
+```
+<button class="btn btn-primary mt-10" type="button" onclick="confirmacionGuardado()>Guardar</button>
+```
+
+Y por ultimo debajo del layout ponemos el código del botón que hemos cogido de sweetalert2
+
+```
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script>
+    function confirmacionGuardado() {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: '¡Estás a punto de guardar los cambios!',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '¡Sí, guardar!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('editForm').submit();
+            }
+        });
+    }
+</script>
+```
+
+![Venatan emergente](public/images/ventana_emergente.PNG)
+
+### Borrar alumnos
+
+Para borrar alumnos de la tabla tenemos que modificar la lógica del botón borrar en views/alumno/index.blade. Hay que agregar un formulario con un método POST para posteriormente dentro de él invocar el método delete,  porque no permite hacerlo directamente.  Además al ser un formulario hay que agregarle el token para que laravel nos permita usarlo.
+
+```
+<form action="{{route("alumnos.destroy", $alumno->id)}}" method="POST">
+    @csrf
+    @method("DELETE")
+
+    <button type="submit">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-red-600">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+        </svg>
+
+    </button>
+</form>
+```
+
+Luego debemos poner las acciones que queremos que se realicen en el controlador de alumno, en el método destroy.
+
+```
+public function destroy(Alumno $alumno)
+{
+    session()->flash("status","Se ha borrado el alumno $alumno->nombre");
+    $alumno->delete();
+    return redirect() -> route('alumnos.index');
+    //
+}
+```
+
+Para poner aquí el boton de borrar, hacemos lo mismo que con el de guardar pero en el fichero index.blade.php. Activamos el evento en el botón.
+
+```
+<button type="button" onclick="confirmacionBorrado({{ $alumno->id }})">
+```
+
+Ponemos el código del alert al final de layout.
+
+```
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script>
+    function confirmacionBorrado(id) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: '¡No podrás revertir esto!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: '¡Sí, bórralo!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('deleteForm' + id).submit();
+            }
+        });
+    }
+</script>
+```
+
+![Ventana emergente](public/images/borrado.PNG)
