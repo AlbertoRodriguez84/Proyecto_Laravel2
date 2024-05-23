@@ -474,3 +474,89 @@ SHOW DATABASES;
 ![BD_consola](public/images/bd_consola1.PNG)
 
 ![BD_consola_logueada](public/images/bd_consola2.PNG)
+
+### Migración
+
+Ahora tenemos que generar la migración, debemos ejecutar:
+
+```
+php artisan make:migration alumnos --create=alumnos
+```
+Una vez ejecutado se nos crea en database/migrations/ una migracion alumnos
+
+Solo esta id , pero creamos todos los campos que necesitemos en nuestra tabla:
+
+```
+
+Schema::create('alumnos', function (Blueprint $table) {
+    $table->id();
+    $table->string('nombre');
+    $table->integer('edad');
+    $table->string('email');
+    $table->timestamps();
+});
+```
+Despues ejecutamos el siguiente comando para ejecutar las migraciones.
+```
+php artisan migrate
+```
+
+Nota: si queremos modificar algún campo de las tablas, tenemos que ejecutar el siguiente comando, que borra todos los campos y los vuelve a crear
+
+```
+php  artisan migrate:fresh 
+```
+
+## Registro de usuarios
+
+Ahora ya tenemos todo listo para poder registrar usuarios. 
+
+Lo único que debemos cambiar en app/Http/controllers/Auth/
+
+AuthenticatedSessionController.php:
+
+Para cuando hagagamos:
+```
+return redirect()->intended(route('main', absolute: false));
+```
+
+RegisteredUserController.php:
+
+```
+ return redirect(route('main', absolute: false));
+ ```
+
+Esto es para que una vez registrados o logueados nos lleve a la pagina de incio.
+
+En el header tambien  se realizan cambiando para muestre los botones Entrar y Registrar sin estar logueado (en modo invitado):
+
+```
+@guest 
+<a href="/login" class="btn btn-primary">Acceso</a>
+<a href="/register" class="btn btn-secondary">Registro</a>
+@endguest
+```
+![User no logueado](public/images/nologueado.PNG)
+
+Y el nombre del usuario y el boton Salir una vez que nos hemos logueado.
+```
+@auth 
+  <h1 class="text-2xl text-white mr-4">{{ auth()->user()->name }}</h1>
+  <form action="{{ route("logout") }}" method="POST">
+   <input class="btn btn-glass" type="submit" value="Salir">
+  </form>
+@endauth
+```
+
+![User logueado](public/images/logueado.PNG)
+
+Además hay que corregir un error, porque cuando le damos s Salir no nos lleva a nuestra pagina inicial, esto es por seguridad al venir desde un formulario y evitar posibles ataques. Para solucionarlo debemos poner un token en el header dentro del formulario logout.
+```
+@auth 
+  <h1 class="text-2xl text-white mr-4">{{ auth()->user()->name }}</h1>
+  <form action="{{ route("logout") }}" method="POST">
+    @csrf 
+   <input class="btn btn-glass" type="submit" value="Salir">
+  </form>
+@endauth
+```
