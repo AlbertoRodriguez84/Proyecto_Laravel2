@@ -560,3 +560,86 @@ Además hay que corregir un error, porque cuando le damos s Salir no nos lleva a
   </form>
 @endauth
 ```
+
+## Modelo de datos
+
+Ahora hay que generar un nuevo modelo de datos para poder trabajar con alumnos, para ello utilizamos el siguiente comando que nos crea todo lo necesario para hacerlo (modelo, controlador, factoria,...):
+
+```
+php artisan make:model Alumno --all
+```
+
+Despues hay que agregar la ruta :
+
+```
+Route::resource("alumnos", \App\Models\Alumno::class);
+```
+
+Despues en database/factories/AlumnoFactory.php necesitamos crear los registros en nuestra base de datos (DNI, nombre, edad, email), para eso tendremos que anañir :
+
+```
+public function definition(): array
+{
+    return [
+        "nombre" => $this->faker->name(),
+        "email" => $this->faker->email(),
+        "edad" => $this->faker->numberBetween(15, 80),
+        "DNI" => $this->get_dni(),
+
+    ];
+}
+´´´
+Uitlizaremos esta función para generar los DNI:
+
+´´´
+private function get_dni(): string
+{
+    $number = $this->faker->numberBetween(10000000, 99999999);
+    $letras = "TRWAGMYFPDXBNJZSQVHLCKE";
+    $letra = $letras[$number % 23];
+    return "$number-$letra";
+}
+```
+
+Una vez que tenemos la fabrica (para crearnos los datos), en el seeder debemos invocar un numero de veces a factory para crear 50 registros.
+
+```
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Alumno;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class AlumnoSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        Alumno::factory(50)->create();
+        //
+    }
+}
+```
+
+Y por ultimo en databaseseeeder tenemos que llamar a la factoria que hemos creado:
+
+```
+$this->call([ AlumnoSeeder::class]);
+```
+
+Ya solo queda indicar en el .env que nos cree los nombres en castellano, cambiando el idioma en la siguiente línea:
+
+```
+APP_FAKER_LOCALE=es_ES
+```
+
+Ahora necesitamos ejecutar la factoria para que cree los registros y complete la base de datos. Hay que poner fresh para que borre los datos existentes y  --seed para que después de hacer la migración haga las poblaciones. 
+
+```
+php artisan migrate:fresh --seed
+```
+![BD con registros](public/images/bd_registros.PNG)
