@@ -340,3 +340,41 @@ Volvemos a buscar a Daisyui y escogemos el que mas nos giuste, lo agregamos a fo
 
 Personalización de la web
 ![WEb Personalizada](public/images/personalizada.PNG)
+
+## Botones Entrar y Registro
+
+Vamos a header y referenciamos los botones Entrar y Registro con las paginas correspondientes (Login y Register) que nos ha instalado Breeze.
+
+```
+<a href="/login" class="btn btn-poutline-warning">Entrar</a>
+
+<a href="/register" class="btn btn-poutline-warning">Registro</a>
+
+```
+
+Una vez hecho esto debemos darle a los apartados de registro y entrar la misma apariencia que nuestra web agregando las etiquetas de <x-layouts.layout> al inicio y </x-layouts.layout> al final.
+
+Además le damos el formato que queremos a cada uno de los formularios para que se vean mejor.
+
+En la web de entrar, creamos un div que envuelva el formulario:
+
+```
+<div class="flex flex-row justify-center p-5 bg-gray-200 ">
+```
+
+En el formulario:
+```
+<form method="POST" action="{{ route('login') }}" class="bg-white p-7 rounded-3xl">
+```
+Y ahora hacemos lo mismo con registro, poner el layout y dar formato.
+
+```
+<div class="flex flex-row justify-center p-5 bg-gray-200 ">
+´´´
+
+En el formulario:
+```
+<form method="POST" action="{{ route('register') }}" class="bg-white p-7 rounded-3xl">
+```
+
+![WEb entrar](public/images/entrar.PNG)
