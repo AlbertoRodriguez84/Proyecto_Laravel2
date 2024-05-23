@@ -1320,3 +1320,24 @@ Vemos como ya tenemos los profesores creados en la base de datos.
 Y aqui como se ha asignado un profesor a cada alumno.
 
 ![Alumnos con profesor](public/images/alumno-prof.PNG)
+
+Por ultimo he mostrado la tabla profesores con los datos de cada tutor siguiendo los mismos pasos que para crear la de alumnos.
+
+![Tabla profesores](public/images/tabla-profesores.PNG)
+
+Si cerramos el proyecto y queremos vovler a abrirlo debemos ejecutar en el terminal los comando para iniciar el servidor.
+
+```
+php artisan serve
+```
+
+Levantar docker
+
+```
+docker compose up
+```
+
+Y permitir que cargue los estilos con
+```
+npm run dev
+```
