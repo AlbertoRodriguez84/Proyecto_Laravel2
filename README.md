@@ -643,3 +643,61 @@ Ahora necesitamos ejecutar la factoria para que cree los registros y complete la
 php artisan migrate:fresh --seed
 ```
 ![BD con registros](public/images/bd_registros.PNG)
+
+
+
+Ahora para poder mostar los alumnos necesitamos crear en el controlador la función que nos pase el array con todos los alumnos:
+
+```
+  public function index()
+    {
+        $alumnos = Alumno::all();
+        return view('alumnos.index',compact('alumnos'));
+        //
+    }
+```
+
+Debemos crear las ruta en el fichero web.php
+
+```
+Route::resource("alumnos", \App\Http\Controllers\AlumnoController::class);
+```
+
+Tambien modificar el nav para que el botón alumnos nos muestre el listado y he agregado la opcion de que solo se muestre si estas logueado:
+
+```
+@auth
+        <a href="{{route("alumnos.index")}}" class=" btn btn-secondary" href="">Alumnos</a>
+    @endauth
+```
+
+El siguiente paso es generar la vista donde podremos visualizar nuestros alumnos, vamos a resource/views/alumnos/index.blade.php
+
+```
+<x-layouts.layout>
+    <div class="overflow-x-auto h-full">
+        <table class="table table-xs table-pin-rows table-pin-cols">
+            <caption>Listado de alumnos</caption>
+            <thead>
+            <tr>
+                <th>DNI</th>
+                <th>Nombre</th>
+                <th>Edad</th>
+                <th>Email</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach($alumnos as $alumno)
+                <tr>
+                    <td>{{$alumno->DNI}}</td>
+                    <td>{{$alumno->nombre}}</td>
+                    <td>{{$alumno->edad}}</td>
+                    <td>{{$alumno->email}}</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
+</x-layouts.layout>
+```
+![Tabla alumnos](public/images/tabla_alumnos.PNG)
